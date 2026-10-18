@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🕵️ DATA DETECTIVE: นักสืบพิชิตข้อมูล - ม.2</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Kanit & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            bg: '#0a0d18',
+                            card: '#121829',
+                            accent: '#00f2fe',
+                            purple: '#7928ca',
+                            neon: '#4facfe',
+                            danger: '#ff2a6d',
+                            success: '#05ffa1',
+                            gold: '#ffb703'
+                        }
+                    },
+                    fontFamily: {
+                        kanit: ['Kanit', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: #0a0d18;
+            color: #f1f5f9;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        /* Cyber Background Grid Grid Animation */
+        .cyber-grid {
+            background-image: 
+                linear-gradient(to right, rgba(0, 242, 254, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 242, 254, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .glass-card {
+            background: rgba(18, 24, 41, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 242, 254, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .glass-card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card-hover:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0, 242, 254, 0.6);
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.3);
+        }
+
+        .neon-glow {
+            text-shadow: 0 0 10px rgba(0, 242, 254, 0.7), 0 0 20px rgba(0, 242, 254, 0.5);
+        }
+
+        .neon-border {
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.3), inset 0 0 15px rgba(0, 242, 254, 0.2);
+        }
+
+        .pulsing-border {
+            animation: pulseGlow 2s infinite alternate;
+        }
+
+        @keyframes pulseGlow {
+            0% { border-color: rgba(0, 242, 254, 0.4); box-shadow: 0 0 10px rgba(0, 242, 254, 0.2); }
+            100% { border-color: rgba(0, 242, 254, 1); box-shadow: 0 0 25px rgba(0, 242, 254, 0.6); }
+        }
+
+        .crossed-out {
+            position: relative;
+            opacity: 0.4;
+            filter: grayscale(80%);
+        }
+        .crossed-out::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 5%;
+            width: 90%;
+            height: 3px;
+            background-color: #ff2a6d;
+            box-shadow: 0 0 8px #ff2a6d;
+            transform: rotate(-5deg);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0d18;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 242, 254, 0.2);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00f2fe;
+        }
+
+        .scanline {
+            width: 100%;
+            height: 100px;
+            z-index: 50;
+            background: linear-gradient(0deg, rgba(0, 242, 254, 0) 0%, rgba(0, 242, 254, 0.03) 50%, rgba(0, 242, 254, 0) 100%);
+            opacity: 0.6;
+            position: absolute;
+            bottom: 100%;
+            pointer-events: none;
+            animation: scanline 8s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { top: -100px; }
+            100% { top: 100%; }
+        }
+    </style>
+</head>
+<body class="cyber-grid min-h-screen flex flex-col justify-between relative text-slate-200">
+    <!-- Scanning Overlay -->
+    <div class="scanline"></div>
+
+    <!-- Background Ambient Glows -->
+    <div class="fixed top-1/4 left-1/10 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="fixed bottom-1/4 right-1/10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+    <!-- TOP NAV / PLAYER HUD -->
+    <header class="glass-card border-b border-cyan-500/20 px-4 py-3 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-4">
+            <!-- Brand / Rank -->
+            <div class="flex items-center gap-3">
+                <button onclick="switchScreen('home-screen')" class="flex items-center gap-2 text-xl font-bold tracking-wider text-cyan-400 hover:text-white transition">
+                    <i class="fa-solid fa-user-secret text-2xl text-cyan-400"></i>
+                    <span class="neon-glow hidden sm:inline">DATA DETECTIVE</span>
+                </button>
+                <span class="text-xs bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 px-2.5 py-1 rounded-full font-mono flex items-center gap-1.5" id="hud-rank">
+                    🔰 Rookie
+                </span>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="flex items-center gap-4 text-sm font-mono">
+                <div class="flex items-center gap-1.5 bg-slate-900/60 px-3 py-1.5 rounded-lg border border-slate-700/50">
+                    <i class="fa-solid fa-trophy text-amber-400"></i>
+                    <span class="text-slate-400 hidden md:inline">SCORE:</span>
+                    <span id="hud-score" class="font-bold text-amber-400">0</span>
+                </div>
+                <div class="flex items-center gap-1.5 bg-slate-900/60 px-3 py-1.5 rounded-lg border border-slate-700/50">
+                    <i class="fa-solid fa-folder-check text-cyan-400"></i>
+                    <span class="text-slate-400 hidden md:inline">CASES:</span>
+                    <span id="hud-cases" class="font-bold text-cyan-400">0/10</span>
+                </div>
+                <div class="flex items-center gap-1.5 bg-slate-900/60 px-3 py-1.5 rounded-lg border border-slate-700/50">
+                    <i class="fa-solid fa-bolt text-purple-400"></i>
+                    <span class="text-slate-400 hidden md:inline">LV:</span>
+                    <span id="hud-level" class="font-bold text-purple-400">1</span>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center gap-2">
+                <button onclick="toggleSound()" id="sound-btn" class="p-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-cyan-400 hover:border-cyan-500 transition" title="Mute/Unmute">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+                <button onclick="switchScreen('profile-screen')" class="p-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-cyan-400 hover:border-cyan-500 transition" title="Profile">
+                    <i class="fa-solid fa-id-card"></i>
+                </button>
+                <button onclick="switchScreen('settings-screen')" class="p-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-cyan-400 hover:border-cyan-500 transition" title="Settings">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER FOR SCREENS -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 relative z-10 flex flex-col justify-center">
+
+        <!-- 1. HOME SCREEN -->
+        <section id="home-screen" class="screen-view active flex flex-col items-center justify-center text-center py-8">
+            <div class="relative mb-6">
+                <div class="absolute -inset-4 bg-cyan-500/20 rounded-full blur-xl animate-pulse"></div>
+                <div class="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl glass-card flex items-center justify-center border-2 border-cyan-400 neon-border relative">
+                    <i class="fa-solid fa-user-secret text-6xl sm:text-7xl text-cyan-400"></i>
+                </div>
+            </div>
+
+            <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight mb-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500">
+                DATA DETECTIVE
+            </h1>
+            <p class="text-cyan-300/80 text-lg sm:text-xl font-light mb-8 max-w-md">
+                “ทุกข้อมูลมีความจริงซ่อนอยู่” <br>
+                <span class="text-xs font-mono text-slate-400">รายวิชาวิทยาการคำนวณ ระดับชั้นมัธยมศึกษาปีที่ 2</span>
+            </p>
+
+            <!-- Main Menu Buttons -->
+            <div class="flex flex-col gap-3.5 w-full max-w-xs">
+                <button onclick="switchScreen('case-select-screen')" class="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 font-bold text-lg text-slate-900 shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 hover:scale-105 active:scale-95 transition flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-play"></i> START INVESTIGATION
+                </button>
+                <button onclick="switchScreen('case-select-screen')" class="w-full py-3 px-6 rounded-xl glass-card glass-card-hover font-semibold text-cyan-300 flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-folder-open"></i> CASE FILES
+                </button>
+                <button onclick="switchScreen('leaderboard-screen')" class="w-full py-3 px-6 rounded-xl glass-card glass-card-hover font-semibold text-amber-300 flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-ranking-star"></i> LEADERBOARD
+                </button>
+                <button onclick="switchScreen('how-to-play-screen')" class="w-full py-3 px-6 rounded-xl glass-card glass-card-hover font-semibold text-slate-300 flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-circle-info"></i> HOW TO PLAY
+                </button>
+            </div>
+        </section>
+
+        <!-- 2. CASE SELECT SCREEN -->
+        <section id="case-select-screen" class="screen-view hidden">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
+                        <i class="fa-solid fa-folder-closed text-cyan-400"></i> แฟ้มคดีปริศนา (CASE FILES)
+                    </h2>
+                    <p class="text-slate-400 text-sm">เลือกล่าคดีเพื่อรวบรวมเบาะแสและอัปเลเวล Detective Rank</p>
+                </div>
+                <button onclick="switchScreen('home-screen')" class="px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-700 transition flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i> หน้าหลัก
+                </button>
+            </div>
+
+            <!-- Case Grid -->
+            <div id="cases-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Dynamically populated via JS -->
+            </div>
+        </section>
+
+        <!-- 3. GAMEPLAY SCREEN -->
+        <section id="gameplay-screen" class="screen-view hidden flex flex-col gap-4">
+            <!-- Header Status -->
+            <div class="glass-card p-4 rounded-xl flex flex-wrap items-center justify-between gap-4 border-l-4 border-l-cyan-400">
+                <div>
+                    <div class="text-xs font-mono text-cyan-400 uppercase tracking-widest" id="game-case-number">CASE #01</div>
+                    <h2 class="text-xl font-bold text-white" id="game-case-title">Loading Title...</h2>
+                </div>
+                
+                <div class="flex items-center gap-6">
+                    <!-- Hearts -->
+                    <div class="flex items-center gap-1 bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-800">
+                        <span class="text-xs text-slate-400 mr-1 font-mono">LIVES:</span>
+                        <div id="hearts-container" class="flex gap-1 text-red-500 text-base">
+                            <i class="fa-solid fa-heart"></i>
+                            <i class="fa-solid fa-heart"></i>
+                            <i class="fa-solid fa-heart"></i>
+                        </div>
+                    </div>
+
+                    <!-- Timer -->
+                    <div id="timer-box" class="flex items-center gap-2 bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-800 font-mono text-cyan-400 font-bold">
+                        <i class="fa-solid fa-clock"></i>
+                        <span id="game-timer">05:00</span>
+                    </div>
+
+                    <button onclick="switchScreen('case-select-screen')" class="text-slate-400 hover:text-red-400 text-lg p-1" title="ยอมแพ้/ออก">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Interactive Gameplay Area -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                
+                <!-- Left Column: Situation & Evidence Workspace -->
+                <div class="lg:col-col-span-7 lg:col-span-7 flex flex-col gap-4">
+                    <!-- Case Brief -->
+                    <div class="glass-card p-4 rounded-xl">
+                        <h3 class="text-sm font-semibold text-cyan-400 mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-file-contract"></i> คำอธิบายสถานการณ์
+                        </h3>
+                        <p id="game-case-desc" class="text-slate-300 text-sm leading-relaxed">
+                            Loading situation description...
+                        </p>
+                    </div>
+
+                    <!-- Evidence Cards Deck -->
+                    <div class="glass-card p-4 rounded-xl flex-grow flex flex-col">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="text-sm font-semibold text-purple-400 flex items-center gap-2">
+                                <i class="fa-solid fa-magnifying-glass"></i> ข้อมูลและเบาะแสที่รวบรวมได้
+                            </h3>
+                            <span class="text-xs text-slate-400">คลิกที่เบาะแสเพื่อปักหมุด📌 หรือ ตัดออก❌</span>
+                        </div>
+
+                        <!-- Clues Container -->
+                        <div id="clues-container" class="grid grid-cols-1 gap-2.5 max-h-[380px] overflow-y-auto pr-1">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Workbench & Deduction Matrix -->
+                <div class="lg:col-span-5 flex flex-col gap-4">
+                    <!-- Deduction Area / Question Box -->
+                    <div class="glass-card p-4 rounded-xl flex-grow flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-3">
+                                <h3 class="text-sm font-semibold text-amber-400 flex items-center gap-2">
+                                    <i class="fa-solid fa-brain"></i> การวิเคราะห์และสรุปผล
+                                </h3>
+                                <button onclick="useHint()" class="text-xs bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-md transition flex items-center gap-1">
+                                    <i class="fa-regular fa-lightbulb"></i> คำใบ้ (<span id="hints-count">3</span>)
+                                </button>
+                            </div>
+
+                            <div id="hint-display" class="hidden mb-3 p-3 rounded-lg bg-amber-950/30 border border-amber-500/30 text-amber-200 text-xs leading-relaxed">
+                                <!-- Hint text -->
+                            </div>
+
+                            <p id="game-question" class="text-sm font-medium text-white mb-4">
+                                Loading question...
+                            </p>
+
+                            <!-- Answer Selector Area -->
+                            <div id="answer-options-container" class="space-y-2 mb-4">
+                                <!-- Generated JS Options -->
+                            </div>
+                        </div>
+
+                        <!-- Action Submit Button -->
+                        <div class="pt-2 border-t border-slate-800">
+                            <button onclick="submitAnswer()" class="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 font-bold text-slate-900 shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 hover:scale-[1.02] active:scale-95 transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-fingerprint text-lg"></i> SOLVE CASE (ส่งคำตอบ)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 4. BONUS CHALLENGE MODAL / SCREEN -->
+        <section id="bonus-screen" class="screen-view hidden flex flex-col items-center justify-center text-center py-6">
+            <div class="max-w-md w-full glass-card p-6 rounded-2xl border-2 border-amber-400/50 shadow-2xl relative">
+                <div class="w-16 h-16 bg-amber-500/20 border border-amber-400 rounded-full flex items-center justify-center mx-auto mb-4 text-amber-300 text-3xl">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-amber-400 mb-1">BONUS CHALLENGE</h2>
+                <p class="text-slate-400 text-xs mb-4">ค้นหาข้อมูลที่ผิดปกติ (Anomaly Data) เพื่อฟื้นฟูชีวิต +1</p>
+
+                <div class="p-4 bg-slate-900/80 rounded-xl border border-slate-800 mb-4">
+                    <p id="bonus-question" class="text-sm text-slate-200 mb-3">ชุดข้อมูลใดที่มีค่าผิดแปลกไปจากรูปแบบ?</p>
+                    <div id="bonus-options" class="grid grid-cols-3 gap-2">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+
+                <button onclick="skipBonus()" class="text-xs text-slate-500 hover:text-slate-400 underline">ข้ามโบนัสนี้</button>
+            </div>
+        </section>
+
+        <!-- 5. CASE RESOLVED / SUMMARY SCREEN -->
+        <section id="summary-screen" class="screen-view hidden flex flex-col items-center justify-center text-center py-6">
+            <div class="max-w-lg w-full glass-card p-6 sm:p-8 rounded-2xl border border-cyan-400/30 text-center relative overflow-hidden">
+                <div class="absolute -top-12 -right-12 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl"></div>
+
+                <div class="text-cyan-400 text-5xl mb-2">
+                    <i class="fa-solid fa-shield-check"></i>
+                </div>
+                <h2 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400 mb-1">
+                    CASE CLOSED!
+                </h2>
+                <p class="text-slate-400 text-sm mb-4" id="summary-case-title">คดีไขปริศนาสำเร็จแล้ว</p>
+
+                <!-- Stars -->
+                <div id="summary-stars" class="flex justify-center gap-2 text-3xl text-amber-400 mb-6">
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                </div>
+
+                <!-- Stats Breakdown -->
+                <div class="grid grid-cols-2 gap-3 bg-slate-900/60 p-4 rounded-xl border border-slate-800 text-left text-xs mb-6 font-mono">
+                    <div>
+                        <span class="text-slate-400">SCORE EARNED:</span>
+                        <div class="text-amber-400 font-bold text-lg" id="summary-score">+500</div>
+                    </div>
+                    <div>
+                        <span class="text-slate-400">TIME TAKEN:</span>
+                        <div class="text-cyan-400 font-bold text-lg" id="summary-time">01:45</div>
+                    </div>
+                </div>
+
+                <!-- Educational Feedback Box -->
+                <div class="p-4 rounded-xl bg-cyan-950/40 border border-cyan-500/30 text-left mb-6">
+                    <h4 class="text-xs font-bold text-cyan-300 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-graduation-cap"></i> ทักษะที่ได้เรียนรู้ (Educational Feedback)
+                    </h4>
+                    <p id="summary-feedback" class="text-xs text-slate-300 leading-relaxed">
+                        คุณได้ใช้ทักษะการเปรียบเทียบข้อมูลและการตัดตัวเลือกที่ไม่เกี่ยวข้องออกไป
+                    </p>
+                </div>
+
+                <div class="flex gap-3">
+                    <button onclick="switchScreen('case-select-screen')" class="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold transition">
+                        <i class="fa-solid fa-list"></i> เลือกคดี
+                    </button>
+                    <button onclick="nextCase()" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-900 font-bold hover:scale-105 transition">
+                        คดีถัดไป <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. PLAYER PROFILE SCREEN -->
+        <section id="profile-screen" class="screen-view hidden max-w-2xl mx-auto w-full">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-id-card text-cyan-400"></i> แฟ้มนักสืบประจำตัว (PROFILE)
+                </h2>
+                <button onclick="switchScreen('home-screen')" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-sm hover:text-white">ปิด</button>
+            </div>
+
+            <div class="glass-card p-6 rounded-2xl mb-6 flex flex-col sm:flex-row items-center gap-6">
+                <div class="w-24 h-24 rounded-2xl bg-gradient-to-tr from-cyan-500 to-purple-600 flex items-center justify-center text-4xl text-slate-900 font-bold border-2 border-cyan-400 shadow-lg">
+                    🕵️‍♂️
+                </div>
+                <div class="text-center sm:text-left flex-grow">
+                    <div class="text-xs font-mono text-cyan-400 uppercase tracking-widest">AGENT DOSSIER</div>
+                    <h3 class="text-2xl font-bold text-white" id="profile-name">Detective Trainee</h3>
+                    <div class="inline-block px-3 py-1 mt-1 rounded-full bg-cyan-950 border border-cyan-500/40 text-cyan-300 text-xs font-mono" id="profile-rank">
+                        🔰 Rookie
+                    </div>
+                </div>
+            </div>
+
+            <!-- Achievements -->
+            <div class="glass-card p-6 rounded-2xl">
+                <h3 class="text-md font-bold text-cyan-300 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-award"></i> ความสำเร็จที่ปลดล็อก (ACHIEVEMENTS)
+                </h3>
+                <div id="achievements-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- JS Populated -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. LEADERBOARD SCREEN -->
+        <section id="leaderboard-screen" class="screen-view hidden max-w-2xl mx-auto w-full">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-amber-400 flex items-center gap-2">
+                    <i class="fa-solid fa-ranking-star"></i> ตารางคะแนนนักสืบ (LEADERBOARD)
+                </h2>
+                <button onclick="switchScreen('home-screen')" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-sm hover:text-white">ปิด</button>
+            </div>
+
+            <div class="glass-card p-4 rounded-2xl">
+                <div id="leaderboard-list" class="space-y-2">
+                    <!-- JS Populated -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 8. HOW TO PLAY SCREEN -->
+        <section id="how-to-play-screen" class="screen-view hidden max-w-2xl mx-auto w-full">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-cyan-400 flex items-center gap-2">
+                    <i class="fa-solid fa-book-open"></i> คู่มือการเล่น (HOW TO PLAY)
+                </h2>
+                <button onclick="switchScreen('home-screen')" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-sm hover:text-white">ปิด</button>
+            </div>
+
+            <div class="glass-card p-6 rounded-2xl space-y-4 text-sm text-slate-300 leading-relaxed">
+                <div class="flex gap-3 items-start">
+                    <div class="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold flex-shrink-0">1</div>
+                    <p><strong class="text-white">ตรวจสอบเบาะแส:</strong> อ่านคำบอกเล่าและเบาะแสทั้งหมดในกระดานสืบสวนอย่างถี่ถ้วน</p>
+                </div>
+                <div class="flex gap-3 items-start">
+                    <div class="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold flex-shrink-0">2</div>
+                    <p><strong class="text-white">ปักหมุด/ตัดตัวเลือก:</strong> กดปุ่ม 📌 เพื่อปักหมุดข้อมูลสำคัญ หรือกด ❌ บนเบาะแสที่ไม่สอดคล้องเพื่อตัดตัวเลือกที่ไม่ใช่</p>
+                </div>
+                <div class="flex gap-3 items-start">
+                    <div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold flex-shrink-0">3</div>
+                    <p><strong class="text-white">ใช้คำใบ้เท่าที่จำเป็น:</strong> คุณสามารถใช้คำใบ้ได้ 3 ครั้งต่อด่าน แต่จะทำให้เสียคะแนนสะสม</p>
+                </div>
+                <div class="flex gap-3 items-start">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold flex-shrink-0">4</div>
+                    <p><strong class="text-white">สรุปผลคำตอบ:</strong> เมื่อมั่นใจแล้ว ให้เลือกคำตอบในกล่องวิเคราะห์แล้วกด "SOLVE CASE"</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 9. SETTINGS SCREEN -->
+        <section id="settings-screen" class="screen-view hidden max-w-md mx-auto w-full">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-gear text-cyan-400"></i> ตั้งค่า (SETTINGS)
+                </h2>
+                <button onclick="switchScreen('home-screen')" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-sm hover:text-white">ปิด</button>
+            </div>
+
+            <div class="glass-card p-6 rounded-2xl space-y-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="font-bold text-white">เสียงเอฟเฟกต์ (SFX)</div>
+                        <div class="text-xs text-slate-400">เปิด/ปิด เสียงตอบถูก เสียงคลิก และเตือนเวลา</div>
+                    </div>
+                    <input type="checkbox" id="setting-sound" checked onchange="toggleSound()" class="w-5 h-5 accent-cyan-400 cursor-pointer">
+                </div>
+                <hr class="border-slate-800">
+                <div>
+                    <button onclick="resetGameData()" class="w-full py-2.5 rounded-xl bg-red-500/20 border border-red-500/40 text-red-300 text-sm font-semibold hover:bg-red-500/30 transition">
+                        <i class="fa-solid fa-rotate-right"></i> รีเซ็ตความคืบหน้าทั้งหมด
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="text-center py-3 text-xs text-slate-500 font-mono relative z-10 border-t border-slate-800/50">
+        DATA DETECTIVE © 2026 — Computing Science Grade 8 Educational Game
+    </footer>
+
+    <script>
+        /* SOUND SYNTHESIZER ENGINE (Web Audio API) */
+        let soundEnabled = true;
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                if (!audioCtx) audioCtx = new AudioCtx();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'click') {
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.exponentialRampToValueAtTime(200, now + 0.05);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.linearRampToValueAtTime(0, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if (type === 'correct') {
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                    osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0, now + 0.35);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(180, now);
+                    osc.frequency.linearRampToValueAtTime(110, now + 0.2);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                } else if (type === 'pin') {
+                    osc.frequency.setValueAtTime(800, now);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.linearRampToValueAtTime(0, now + 0.08);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                }
+            } catch (e) {
+                console.log("Audio not supported or blocked");
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('sound-btn');
+            const chk = document.getElementById('setting-sound');
+            if (btn) btn.innerHTML = soundEnabled ? '<i class="fa-solid fa-volume-high"></i>' : '<i class="fa-solid fa-volume-xmark text-red-400"></i>';
+            if (chk) chk.checked = soundEnabled;
+        }
+
+        /* GAME DATA: 10 CASES CURRICULUM COMPATIBLE */
+        const CASES_DATA = [
+            {
+                id: 1,
+                title: "แล็ปท็อปที่หายไป",
+                difficulty: "Easy",
+                timeLimit: 300,
+                description: "มีนักเรียน 4 คน (นนท์, มิน, ฟ้า, เจมส์) ใช้แล็ปท็อป 4 เครื่อง (A, B, C, D) จงสืบหาว่าใครใช้แล็ปท็อปเครื่องใด?",
+                clues: [
+                    "มิน ไม่ได้ใช้แล็ปท็อปเครื่อง A",
+                    "คนที่ใช้แล็ปท็อปเครื่อง C เรียนอยู่ห้อง 3",
+                    "เจมส์ ใช้แล็ปท็อปเครื่อง D",
+                    "ฟ้า ไม่ได้อยู่ห้อง 3",
+                    "นนท์ ไม่ได้ใช้แล็ปท็อปเครื่อง B"
+                ],
+                hints: [
+                    "ลองเริ่มจากข้อมูลของ เจมส์ ก่อน เพราะระบุเครื่องแน่นอน",
+                    "คนที่อยู่ห้อง 3 คือคนที่ใช้เครื่อง C ซึ่งไม่ใช่ฟ้า",
+                    "เมื่อรู้ว่าใครใช้ C และ D แล้ว นนท์ ไม่ได้ใช้ B ดังนั้นนนท์ต้องใช้ A"
+                ],
+                options: [
+                    { id: 'opt1', text: "นนท์: A, มิน: B, ฟ้า: C, เจมส์: D" },
+                    { id: 'opt2', text: "นนท์: A, มิน: C, ฟ้า: B, เจมส์: D", correct: true },
+                    { id: 'opt3', text: "นนท์: B, มิน: A, ฟ้า: C, เจมส์: D" },
+                    { id: 'opt4', text: "นนท์: C, มิน: B, ฟ้า: A, เจมส์: D" }
+                ],
+                feedback: "คุณใช้ทักษะการวิเคราะห์ข้อมูลเงื่อนไขและตารางตรรกศาสตร์ (Grid Logic Deduction) เพื่อตัดตัวเลือกที่ขัดแย้งออกไปได้สำเร็จ!"
+            },
+            {
+                id: 2,
+                title: "สัตว์เลี้ยงปริศนา",
+                difficulty: "Easy",
+                timeLimit: 240,
+                description: "มีสัตว์เลี้ยง 3 ตัว (แมว, สุนัข, นก) สวมปลอกคอ 3 สี (แดง, น้ำเงิน, เขียว) หาความเชื่อมโยงที่ถูกต้อง",
+                clues: [
+                    "สุนัข ไม่ชอบสวมปลอกคอสีแดง",
+                    "สัตว์ที่บินได้ สวมปลอกคอสีเขียว",
+                    "แมว ไม่สวมปลอกคอสีน้ำเงิน"
+                ],
+                hints: [
+                    "สัตว์ที่บินได้คือนก ดังนั้น นก = ปลอกคอสีเขียว",
+                    "แมวไม่ได้ใส่สีน้ำเงิน และนกใส่สีเขียวไปแล้ว แมวต้องใส่สีอะไร?",
+                    "แมวสวมปลอกคอสีแดง"
+                ],
+                options: [
+                    { id: 'opt1', text: "แมว: แดง, สุนัข: น้ำเงิน, นก: เขียว", correct: true },
+                    { id: 'opt2', text: "แมว: เขียว, สุนัข: แดง, นก: น้ำเงิน" },
+                    { id: 'opt3', text: "แมว: น้ำเงิน, สุนัข: เขียว, นก: แดง" }
+                ],
+                feedback: "ทักษะการจัดหมวดหมู่และจับคู่ข้อมูลที่มีเงื่อนไข ช่วยให้คุณจำแนกความสัมพันธ์ของข้อมูลได้อย่างแม่นยำ!"
+            },
+            {
+                id: 3,
+                title: "รหัสลับห้องควบคุม",
+                difficulty: "Medium",
+                timeLimit: 240,
+                description: "ถอดรหัสตัวเลข 3 หลักจากเบาะแสต่อไปนี้เพื่อเปิดประตูระบบ DATA ARCHIVE",
+                clues: [
+                    "6 8 2: มีตัวเลขถูกต้อง 1 ตัว และถูกตำแหน่ง",
+                    "6 1 4: มีตัวเลขถูกต้อง 1 ตัว แต่ผิดตำแหน่ง",
+                    "2 0 6: มีตัวเลขถูกต้อง 2 ตัว แต่ผิดตำแหน่งทั้งหมด",
+                    "7 3 8: ไม่มีตัวเลขใดถูกต้องเลย"
+                ],
+                hints: [
+                    "จาก 7 3 8 ตัดเลข 7, 3, 8 ออกทั้งหมด",
+                    "จาก 6 8 2 เมื่อตัด 8 ออก เหลือ 6 หรือ 2 ที่ถูกต้อง",
+                    "วิเคราะห์ตำแหน่งเลข 0, 4, 2 เพิ่มเติม"
+                ],
+                options: [
+                    { id: 'opt1', text: "0 4 2", correct: true },
+                    { id: 'opt2', text: "6 0 2" },
+                    { id: 'opt3', text: "0 6 4" },
+                    { id: 'opt4', text: "2 1 6" }
+                ],
+                feedback: "การตรวจสอบและคัดกรองชุดข้อมูลที่ไม่สอดคล้องออก (Data Filtering) เป็นหัวใจสำคัญของการถอดรหัสเชิงตรรกะ!"
+            },
+            {
+                id: 4,
+                title: "นักเรียนที่หายไป",
+                difficulty: "Medium",
+                timeLimit: 240,
+                description: "นักเรียนคนหนึ่งไม่ได้มาเข้าแถวตอนเช้า ค้นหาว่าใครหายไปจากบันทึกเวลาเข้าโรงเรียน",
+                clues: [
+                    "บันทึกกล้องประตูหน้า: ต้น, บีม, กาย เข้าเวลา 07:30 น.",
+                    "บันทึกโรงอาหาร: กาย, แป้ง ซื้ออาหารเวลา 07:45 น.",
+                    "รายชื่อนักเรียนกลุ่ม A ทั้งหมด: ต้น, บีม, กาย, แป้ง, นิว",
+                    "ไม่มีการบันทึกชื่อ 'นิว' ในระบบเช็กชื่อเข้าประตูหรือเช็กชื่อในชั้นเรียนเลย"
+                ],
+                hints: [
+                    "เปรียบเทียบรายชื่อทั้งหมด กับรายชื่อที่ปรากฏใน LOGs",
+                    "ค้นหารายชื่อที่ไม่เคยปรากฏในเหตุการณ์ใดๆ เลย"
+                ],
+                options: [
+                    { id: 'opt1', text: "ต้น" },
+                    { id: 'opt2', text: "กาย" },
+                    { id: 'opt3', text: "นิว", correct: true },
+                    { id: 'opt4', text: "แป้ง" }
+                ],
+                feedback: "คุณได้เปรียบเทียบชุดข้อมูลสองชุด (Dataset Cross-Checking) เพื่อค้นหาข้อมูลที่ตกสำรวจ (Missing Data)!"
+            },
+            {
+                id: 5,
+                title: "การทุจริตคะแนน",
+                difficulty: "Medium",
+                timeLimit: 200,
+                description: "พบว่ามีไฟล์คะแนนถูกแก้ไขย้อนหลัง จงค้นหาช่วงเวลาและ IP Address ที่ต้องสงสัย",
+                clues: [
+                    "ไฟล์ถูกแก้ไขเมื่อเวลา 23:15 น.",
+                    "IP 192.168.1.10 เข้าใช้งานเวลา 08:00 - 16:00 น.",
+                    "IP 192.168.1.45 เข้าใช้งานเวลา 23:10 - 23:30 น.",
+                    "IP 192.168.1.88 เข้าใช้งานเวลา 12:00 - 13:00 น."
+                ],
+                hints: [
+                    "เปรียบเทียบเวลาที่เกิดเหตุ (23:15) กับเวลาการเข้าใช้งานของแต่ละ IP"
+                ],
+                options: [
+                    { id: 'opt1', text: "IP 192.168.1.10" },
+                    { id: 'opt2', text: "IP 192.168.1.45", correct: true },
+                    { id: 'opt3', text: "IP 192.168.1.88" }
+                ],
+                feedback: "การวิเคราะห์ลำดับเวลา (Timestamp Analysis) ช่วยระบุความสัมพันธ์ของเหตุการณ์ผิดปกติได้อย่างถูกต้อง!"
+            },
+            {
+                id: 6,
+                title: "ปริศนาไซเบอร์",
+                difficulty: "Hard",
+                timeLimit: 180,
+                description: "ระบบเซิร์ฟเวอร์โดนส่งข้อความสแปม วิเคราะห์ว่าผู้ส่งอยู่ในเขตเวลา (Timezone) ใด",
+                clues: [
+                    "เซิร์ฟเวอร์หลักบันทึกเวลาสแปมตอน 12:00 น. (UTC+7)",
+                    "เครื่องส่งสแปมส่งข้อความตอนเวลา 00:00 น. ในเวลาท้องถิ่นของตนเอง",
+                    "ผลต่างเวลาคือ 12 ชั่วโมงช้ากว่า UTC+7"
+                ],
+                hints: [
+                    "คำนวณ UTC+7 ลบด้วย 12 ชั่วโมง"
+                ],
+                options: [
+                    { id: 'opt1', text: "UTC-5", correct: true },
+                    { id: 'opt2', text: "UTC+2" },
+                    { id: 'opt3', text: "UTC-12" }
+                ],
+                feedback: "การแปลงและคำนวณโครงสร้างข้อมูลเชิงมิติเวลา ช่วยเชื่อมโยงตำแหน่งที่มาของข้อมูลได้อย่างแม่นยำ!"
+            },
+            {
+                id: 7,
+                title: "ข่าวปลอมระบาด",
+                difficulty: "Hard",
+                timeLimit: 180,
+                description: "ข้อความใดต่อไปนี้เป็น 'ข้อมูลเท็จ/ข่าวปลอม' ที่ไม่มีแหล่งข่าวอ้างอิงที่น่าเชื่อถือ",
+                clues: [
+                    "ข้อความ A: 'กรมอุตุนิยมวิทยาเตือนพายุเข้าภาคเหนือ ประกาศ ณ วันที่ 10 ต.ค.'" ,
+                    "ข้อความ B: 'แชร์ด่วน! ดื่มน้ำต้มใบไม้ชนิดนี้รักษาโรคมะเร็งหายขาดใน 3 วัน ไม่ต้องพบแพทย์'",
+                    "ข้อความ C: 'กระทรวงสาธารณสุขแนะสวมหน้ากากอนามัยในพื้นที่ฝุ่น PM2.5 สูง'"
+                ],
+                hints: [
+                    "สังเกตคำโฆษณาชวนเชื่อที่เกินจริงและขาดหน่วยงานรับรอง"
+                ],
+                options: [
+                    { id: 'opt1', text: "ข้อความ A" },
+                    { id: 'opt2', text: "ข้อความ B", correct: true },
+                    { id: 'opt3', text: "ข้อความ C" }
+                ],
+                feedback: "คุณมีทักษะในการประเมินความน่าเชื่อถือของข้อมูล (Information Literacy & Evaluation) อย่างดีเยี่ยม!"
+            },
+            {
+                id: 8,
+                title: "รูปแบบที่ซ่อนอยู่",
+                difficulty: "Hard",
+                timeLimit: 180,
+                description: "ค้นหาตัวเลขถัดไปของอนุกรมข้อมูลนี้: 3, 6, 12, 24, 48, [?]",
+                clues: [
+                    "3 x 2 = 6",
+                    "6 x 2 = 12",
+                    "12 x 2 = 24",
+                    "24 x 2 = 48"
+                ],
+                hints: [
+                    "สังเกตว่าแต่ละจำนวนเพิ่มขึ้นเป็น 2 เท่าของจำนวนก่อนหน้า"
+                ],
+                options: [
+                    { id: 'opt1', text: "80" },
+                    { id: 'opt2', text: "96", correct: true },
+                    { id: 'opt3', text: "100" }
+                ],
+                feedback: "การหารูปแบบของข้อมูล (Pattern Recognition) ช่วยให้ทำนายแนวโน้มและค่าถัดไปของข้อมูลได้อย่างถูกต้อง!"
+            },
+            {
+                id: 9,
+                title: "ขโมยดิจิทัล",
+                difficulty: "Hard",
+                timeLimit: 180,
+                description: "ค้นหาตัวคนร้ายจากลายนิ้วมือดิจิทัล โดยจับคู่แฮชรหัสผ่าน (Hash Matches)",
+                clues: [
+                    "รหัสแฮชของคนร้าย: 'a8f5c...'",
+                    "User_01 Hash: 'b2e1a...'",
+                    "User_02 Hash: 'a8f5c...'",
+                    "User_03 Hash: 'f9d3e...'"
+                ],
+                hints: [
+                    "เปรียบเทียบข้อความแฮชตรงๆ ว่าอันไหนตรงกับรหัสคนร้าย"
+                ],
+                options: [
+                    { id: 'opt1', text: "User_01" },
+                    { id: 'opt2', text: "User_02", correct: true },
+                    { id: 'opt3', text: "User_03" }
+                ],
+                feedback: "การตรวจสอบความสมบูรณ์และการจับคู่ตรงกันของข้อมูล (Data Matching Verification) ช่วยยืนยันอัตลักษณ์ได้ 100%!"
+            },
+            {
+                id: 10,
+                title: "FINAL CASE: ปริศนาแห่งเมืองไซเบอร์ 🔥",
+                difficulty: "Master",
+                timeLimit: 300,
+                description: "คดีสุดท้าย! รวมข้อมูลหลากรูปแบบเพื่อค้นหาว่า ใครคือ Hacker ที่โจมตีระบบ DATA ARCHIVE",
+                clues: [
+                    "เวลาโจมตีระบบ: 14:30 น.",
+                    "ผู้ต้องสงสัย A: มี LOG เข้าตึกเวลา 14:00 น. แต่ใช้ IP จากนอกตึก",
+                    "ผู้ต้องสงสัย B: ไม่มี LOG เข้าตึก แต่ IP ตรงกับเครื่องที่ส่งมัลแวร์ ณ เวลา 14:30 น.",
+                    "ผู้ต้องสงสัย C: มีพยานยืนยันว่าสอบอยู่ห้องเรียนเวลา 14:00 - 15:00 น.",
+                    "ข้อความเบาะแสเพิ่มเติม: แฮกเกอร์ไม่ได้อยู่ในตึก แต่นั่งทำงานผ่าน遠程 (Remote IP)"
+                ],
+                hints: [
+                    "ตัด ผู้ต้องสงสัย C ออกเพราะมีพยานเวลาสมบูรณ์",
+                    "แฮกเกอร์ไม่ได้อยู่ในตึก ดังนั้นพิจารณา ผู้ต้องสงสัย B"
+                ],
+                options: [
+                    { id: 'opt1', text: "ผู้ต้องสงสัย A" },
+                    { id: 'opt2', text: "ผู้ต้องสงสัย B", correct: true },
+                    { id: 'opt3', text: "ผู้ต้องสงสัย C" }
+                ],
+                feedback: "ยินดีด้วย Master Detective! คุณได้สังเคราะห์ข้อมูลหลายมิติ (Multi-source Data Integration) จนไขคดีใหญ่สำเร็จ!"
+            }
+        ];
+
+        /* BONUS CHALLENGES */
+        const BONUS_DATA = [
+            { question: "หาค่าที่ผิดปกติ (Anomaly Data) จากชุดข้อมูลอุณหภูมิห้อง: 25°C, 26°C, 25°C, 89°C, 24°C", options: ["25°C", "89°C", "24°C"], correct: "89°C" },
+            { question: "หาข้อมูลผิดประเภทจากรายการอายุของนักเรียน: [14, 15, 14, 'Hello', 13]", options: ["14", "'Hello'", "13"], correct: "'Hello'" }
+        ];
+
+        /* ACHIEVEMENTS LIST */
+        const ACHIEVEMENTS = [
+            { id: 'first_case', title: '🔍 First Case', desc: 'ไขคดีแรกสำเร็จ', unlocked: false },
+            { id: 'no_hint', title: '🧠 No Hint Needed', desc: 'ผ่านคดีโดยไม่ใช้คำใบ้', unlocked: false },
+            { id: 'master', title: '👑 Data Master', desc: 'ผ่านครบทุก 10 คดี', unlocked: false }
+        ];
+
+        /* GAME STATE */
+        let gameState = {
+            score: 0,
+            completedCases: [],
+            currentCaseIndex: 0,
+            lives: 3,
+            hintsLeft: 3,
+            timer: null,
+            timeRemaining: 0,
+            pinnedClues: new Set(),
+            crossedClues: new Set(),
+            selectedOptionId: null,
+            usedHintInCurrent: false
+        };
+
+        // ON LOAD INITIALIZATION
+        window.onload = function() {
+            loadGameProgress();
+            updateHUD();
+            renderCasesGrid();
+            renderAchievements();
+            renderLeaderboard();
+        };
+
+        function switchScreen(screenId) {
+            playSound('click');
+            document.querySelectorAll('.screen-view').forEach(s => s.classList.add('hidden'));
+            const target = document.getElementById(screenId);
+            if (target) {
+                target.classList.remove('hidden');
+                target.classList.add('active');
+            }
+        }
+
+        function getRankName(score, count) {
+            if (count >= 10) return "👑 Data Master";
+            if (count >= 7) return "🧠 Master Detective";
+            if (count >= 4) return "🕵️ Detective";
+            if (count >= 1) return "🔎 Investigator";
+            return "🔰 Rookie";
+        }
+
+        function updateHUD() {
+            const rank = getRankName(gameState.score, gameState.completedCases.length);
+            document.getElementById('hud-rank').textContent = rank;
+            document.getElementById('hud-score').textContent = gameState.score;
+            document.getElementById('hud-cases').textContent = `${gameState.completedCases.length}/10`;
+            document.getElementById('hud-level').textContent = Math.floor(gameState.score / 500) + 1;
+
+            // Profile Update
+            document.getElementById('profile-rank').textContent = rank;
+        }
+
+        function renderCasesGrid() {
+            const grid = document.getElementById('cases-grid');
+            grid.innerHTML = '';
+
+            CASES_DATA.forEach((c, idx) => {
+                const isUnlocked = idx === 0 || gameState.completedCases.includes(c.id - 1);
+                const isCompleted = gameState.completedCases.includes(c.id);
+
+                const card = document.createElement('div');
+                card.className = `glass-card p-5 rounded-xl flex flex-col justify-between relative overflow-hidden ${isUnlocked ? 'glass-card-hover cursor-pointer' : 'opacity-50 grayscale cursor-not-allowed'}`;
+                
+                if (isUnlocked) {
+                    card.onclick = () => startCase(idx);
+                }
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-xs font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800">CASE #${String(c.id).padStart(2, '0')}</span>
+                            <span class="text-xs font-bold ${c.difficulty==='Easy'?'text-emerald-400':c.difficulty==='Medium'?'text-amber-400':'text-red-400'}">${c.difficulty}</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-1">${c.title}</h3>
+                        <p class="text-xs text-slate-400 line-clamp-2 mb-4">${c.description}</p>
+                    </div>
+
+                    <div class="flex items-center justify-between border-t border-slate-800/80 pt-3 text-xs">
+                        <span class="text-slate-400 font-mono"><i class="fa-regular fa-clock"></i> ${Math.floor(c.timeLimit/60)}m</span>
+                        <div>
+                            ${isCompleted ? '<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> CLEARED</span>' : isUnlocked ? '<span class="text-cyan-400 font-bold">PLAY <i class="fa-solid fa-chevron-right"></i></span>' : '<span class="text-slate-500"><i class="fa-solid fa-lock"></i> LOCKED</span>'}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function startCase(index) {
+            gameState.currentCaseIndex = index;
+            const caseObj = CASES_DATA[index];
+            
+            gameState.lives = 3;
+            gameState.hintsLeft = 3;
+            gameState.pinnedClues.clear();
+            gameState.crossedClues.clear();
+            gameState.selectedOptionId = null;
+            gameState.usedHintInCurrent = false;
+
+            document.getElementById('game-case-number').textContent = `CASE #${String(caseObj.id).padStart(2, '0')}`;
+            document.getElementById('game-case-title').textContent = caseObj.title;
+            document.getElementById('game-case-desc').textContent = caseObj.description;
+            document.getElementById('game-question').textContent = "จากข้อมูลเบาะแสทั้งหมด คุณสรุปผลอย่างไร?";
+            document.getElementById('hints-count').textContent = gameState.hintsLeft;
+            document.getElementById('hint-display').classList.add('hidden');
+
+            renderHearts();
+            renderClues(caseObj.clues);
+            renderOptions(caseObj.options);
+            startTimer(caseObj.timeLimit);
+
+            switchScreen('gameplay-screen');
+        }
+
+        function renderHearts() {
+            const container = document.getElementById('hearts-container');
+            container.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                if (i < gameState.lives) {
+                    container.innerHTML += '<i class="fa-solid fa-heart text-red-500"></i>';
+                } else {
+                    container.innerHTML += '<i class="fa-regular fa-heart text-slate-600"></i>';
+                }
+            }
+        }
+
+        function renderClues(clues) {
+            const container = document.getElementById('clues-container');
+            container.innerHTML = '';
+
+            clues.forEach((clueText, i) => {
+                const isPinned = gameState.pinnedClues.has(i);
+                const isCrossed = gameState.crossedClues.has(i);
+
+                const item = document.createElement('div');
+                item.className = `p-3 rounded-lg bg-slate-900/80 border ${isPinned ? 'border-amber-400 bg-amber-950/20' : 'border-slate-800'} ${isCrossed ? 'crossed-out' : ''} flex justify-between items-center gap-3 transition`;
+                
+                item.innerHTML = `
+                    <div class="flex items-start gap-2.5 text-xs text-slate-200">
+                        <i class="fa-solid fa-quote-left text-cyan-500/50 mt-0.5"></i>
+                        <span>${clueText}</span>
+                    </div>
+                    <div class="flex items-center gap-1 flex-shrink-0">
+                        <button onclick="togglePinClue(${i})" class="p-1.5 rounded hover:bg-slate-800 ${isPinned ? 'text-amber-400' : 'text-slate-500'}" title="ปักหมุด">
+                            <i class="fa-solid fa-thumbtack"></i>
+                        </button>
+                        <button onclick="toggleCrossClue(${i})" class="p-1.5 rounded hover:bg-slate-800 ${isCrossed ? 'text-red-400' : 'text-slate-500'}" title="ตัดออก">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function togglePinClue(index) {
+            playSound('pin');
+            if (gameState.pinnedClues.has(index)) {
+                gameState.pinnedClues.delete(index);
+            } else {
+                gameState.pinnedClues.add(index);
+                gameState.crossedClues.delete(index);
+            }
+            renderClues(CASES_DATA[gameState.currentCaseIndex].clues);
+        }
+
+        function toggleCrossClue(index) {
+            playSound('click');
+            if (gameState.crossedClues.has(index)) {
+                gameState.crossedClues.delete(index);
+            } else {
+                gameState.crossedClues.add(index);
+                gameState.pinnedClues.delete(index);
+            }
+            renderClues(CASES_DATA[gameState.currentCaseIndex].clues);
+        }
+
+        function renderOptions(options) {
+            const container = document.getElementById('answer-options-container');
+            container.innerHTML = '';
+
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left p-3 rounded-xl border text-xs sm:text-sm font-medium transition flex items-center justify-between ${gameState.selectedOptionId === opt.id ? 'bg-cyan-500/20 border-cyan-400 text-white' : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:border-slate-700'}`;
+                btn.onclick = () => {
+                    playSound('click');
+                    gameState.selectedOptionId = opt.id;
+                    renderOptions(options);
+                };
+                btn.innerHTML = `
+                    <span>${opt.text}</span>
+                    <i class="fa-regular ${gameState.selectedOptionId === opt.id ? 'fa-circle-dot text-cyan-400' : 'fa-circle text-slate-600'}"></i>
+                `;
+                container.appendChild(btn);
+            });
+        }
+
+        function useHint() {
+            if (gameState.hintsLeft <= 0) return;
+            playSound('click');
+            gameState.hintsLeft--;
+            gameState.usedHintInCurrent = true;
+            document.getElementById('hints-count').textContent = gameState.hintsLeft;
+
+            const caseObj = CASES_DATA[gameState.currentCaseIndex];
+            const hintIdx = 2 - gameState.hintsLeft;
+            const hintText = caseObj.hints[hintIdx] || caseObj.hints[caseObj.hints.length - 1];
+
+            const hintBox = document.getElementById('hint-display');
+            hintBox.innerHTML = `<i class="fa-solid fa-lightbulb text-amber-400 mr-1"></i> <strong>คำใบ้ #${hintIdx + 1}:</strong> ${hintText}`;
+            hintBox.classList.remove('hidden');
+        }
+
+        function startTimer(seconds) {
+            clearInterval(gameState.timer);
+            gameState.timeRemaining = seconds;
+            updateTimerDisplay();
+
+            gameState.timer = setInterval(() => {
+                gameState.timeRemaining--;
+                updateTimerDisplay();
+
+                if (gameState.timeRemaining <= 0) {
+                    clearInterval(gameState.timer);
+                    handleWrongAnswer("หมดเวลาสืบสวน!");
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(gameState.timeRemaining / 60);
+            const secs = gameState.timeRemaining % 60;
+            const disp = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            const elem = document.getElementById('game-timer');
+            const box = document.getElementById('timer-box');
+            
+            if (elem) elem.textContent = disp;
+            if (box) {
+                if (gameState.timeRemaining <= 30) {
+                    box.classList.add('text-red-400', 'border-red-500/50', 'animate-pulse');
+                } else {
+                    box.classList.remove('text-red-400', 'border-red-500/50', 'animate-pulse');
+                    box.classList.add('text-cyan-400');
+                }
+            }
+        }
+
+        function submitAnswer() {
+            if (!gameState.selectedOptionId) {
+                alert("กรุณาเลือกคำตอบที่ต้องการสรุปผลก่อน!");
+                return;
+            }
+
+            const caseObj = CASES_DATA[gameState.currentCaseIndex];
+            const selectedOpt = caseObj.options.find(o => o.id === gameState.selectedOptionId);
+
+            if (selectedOpt && selectedOpt.correct) {
+                handleCorrectAnswer();
+            } else {
+                handleWrongAnswer("คำตอบไม่ถูกต้อง ลองวิเคราะห์ใหม่อีกครั้ง!");
+            }
+        }
+
+        function handleCorrectAnswer() {
+            clearInterval(gameState.timer);
+            playSound('correct');
+
+            const caseObj = CASES_DATA[gameState.currentCaseIndex];
+            
+            // Calculate Score
+            const timeBonus = gameState.timeRemaining * 2;
+            const hintPenalty = (3 - gameState.hintsLeft) * 50;
+            const earned = Math.max(100, 500 + timeBonus - hintPenalty);
+
+            gameState.score += earned;
+
+            if (!gameState.completedCases.includes(caseObj.id)) {
+                gameState.completedCases.push(caseObj.id);
+            }
+
+            // Check Achievements
+            if (gameState.completedCases.length >= 1) unlockAchievement('first_case');
+            if (!gameState.usedHintInCurrent) unlockAchievement('no_hint');
+            if (gameState.completedCases.length >= 10) unlockAchievement('master');
+
+            saveGameProgress();
+            updateHUD();
+
+            // Setup Summary
+            document.getElementById('summary-case-title').textContent = `${caseObj.title} - สำเร็จแล้ว!`;
+            document.getElementById('summary-score').textContent = `+${earned}`;
+            document.getElementById('summary-time').textContent = `${Math.floor((caseObj.timeLimit - gameState.timeRemaining)/60)}m ${(caseObj.timeLimit - gameState.timeRemaining)%60}s`;
+            document.getElementById('summary-feedback').textContent = caseObj.feedback;
+
+            // Trigger Bonus or Summary
+            if (Math.random() > 0.5 && gameState.lives < 3) {
+                triggerBonus();
+            } else {
+                switchScreen('summary-screen');
+            }
+        }
+
+        function handleWrongAnswer(msg) {
+            playSound('wrong');
+            gameState.lives--;
+            renderHearts();
+
+            if (gameState.lives <= 0) {
+                clearInterval(gameState.timer);
+                alert(`❤️ หัวใจหมดแล้ว! คดีนี้ล้มเหลว โปรดเริ่มสืบสวนใหม่อีกครั้ง`);
+                startCase(gameState.currentCaseIndex);
+            } else {
+                alert(`${msg} (เหลือหัวใจ ${gameState.lives} ดวง)`);
+            }
+        }
+
+        /* BONUS CHALLENGE SYSTEM */
+        function triggerBonus() {
+            const bonus = BONUS_DATA[Math.floor(Math.random() * BONUS_DATA.length)];
+            document.getElementById('bonus-question').textContent = bonus.question;
+            const optsContainer = document.getElementById('bonus-options');
+            optsContainer.innerHTML = '';
+
+            bonus.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "py-2 px-3 rounded-lg bg-slate-800 hover:bg-cyan-500/20 text-xs text-white border border-slate-700 transition";
+                btn.textContent = opt;
+                btn.onclick = () => {
+                    if (opt === bonus.correct) {
+                        playSound('correct');
+                        gameState.lives = Math.min(3, gameState.lives + 1);
+                        alert("🎉 ถูกต้อง! เพิ่มหัวใจ +1");
+                    } else {
+                        playSound('wrong');
+                        alert("❌ ไม่ถูกต้อง!");
+                    }
+                    switchScreen('summary-screen');
+                };
+                optsContainer.appendChild(btn);
+            });
+
+            switchScreen('bonus-screen');
+        }
+
+        function skipBonus() {
+            switchScreen('summary-screen');
+        }
+
+        function nextCase() {
+            if (gameState.currentCaseIndex + 1 < CASES_DATA.length) {
+                startCase(gameState.currentCaseIndex + 1);
+            } else {
+                switchScreen('case-select-screen');
+            }
+        }
+
+        function unlockAchievement(id) {
+            const ach = ACHIEVEMENTS.find(a => a.id === id);
+            if (ach && !ach.unlocked) {
+                ach.unlocked = true;
+            }
+        }
+
+        function renderAchievements() {
+            const container = document.getElementById('achievements-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            ACHIEVEMENTS.forEach(a => {
+                const div = document.createElement('div');
+                div.className = `p-3 rounded-xl border flex items-center gap-3 ${a.unlocked ? 'bg-cyan-950/30 border-cyan-500/40 text-cyan-300' : 'bg-slate-900/40 border-slate-800 text-slate-600 opacity-60'}`;
+                div.innerHTML = `
+                    <div class="text-2xl">${a.title.split(' ')[0]}</div>
+                    <div>
+                        <div class="font-bold text-xs text-white">${a.title}</div>
+                        <div class="text-[10px] text-slate-400">${a.desc}</div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function renderLeaderboard() {
+            const list = document.getElementById('leaderboard-list');
+            if (!list) return;
+            list.innerHTML = '';
+
+            const mocks = [
+                { name: "Detective A", score: 9850, rank: "👑 Data Master" },
+                { name: "Detective B", score: 8920, rank: "🧠 Master Detective" },
+                { name: "You (คุณ)", score: gameState.score, rank: getRankName(gameState.score, gameState.completedCases.length) },
+                { name: "Detective C", score: 4200, rank: "🕵️ Detective" }
+            ].sort((a,b) => b.score - a.score);
+
+            mocks.forEach((m, i) => {
+                const item = document.createElement('div');
+                item.className = `p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex justify-between items-center text-xs ${m.name.includes('You') ? 'border-cyan-400/50 bg-cyan-950/20' : ''}`;
+                item.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="font-bold text-sm w-4 ${i===0?'text-amber-400':i===1?'text-slate-300':i===2?'text-amber-600':'text-slate-500'}">#${i+1}</span>
+                        <div>
+                            <div class="font-bold text-white">${m.name}</div>
+                            <div class="text-[10px] text-slate-400">${m.rank}</div>
+                        </div>
+                    </div>
+                    <div class="font-mono text-amber-400 font-bold text-sm">${m.score.toLocaleString()}</div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function saveGameProgress() {
+            try {
+                const data = {
+                    score: gameState.score,
+                    completedCases: gameState.completedCases
+                };
+                localStorage.setItem('data_detective_m2', JSON.stringify(data));
+            } catch (e) {}
+        }
+
+        function loadGameProgress() {
+            try {
+                const data = JSON.parse(localStorage.getItem('data_detective_m2'));
+                if (data) {
+                    gameState.score = data.score || 0;
+                    gameState.completedCases = data.completedCases || [];
+                }
+            } catch (e) {}
+        }
+
+        function resetGameData() {
+            if (confirm("คุณแน่ใจหรือไม่ว่าต้องการรีเซ็ตความคืบหน้าทั้งหมด?")) {
+                localStorage.removeItem('data_detective_m2');
+                gameState.score = 0;
+                gameState.completedCases = [];
+                updateHUD();
+                renderCasesGrid();
+                alert("รีเซ็ตข้อมูลเรียบร้อยแล้ว");
+                switchScreen('home-screen');
+            }
+        }
+    </script>
+</body>
+</html>
